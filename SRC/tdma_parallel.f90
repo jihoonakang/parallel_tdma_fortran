@@ -1,5 +1,6 @@
 !>
-!> @brief       Parallel TDMA solver using cyclic reduction (CR) anc Parallel CR algorithm.
+!> @brief       Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR),
+!>              and Thomas+PCR hybrid algorithm
 !> @details     The CR algorithm is described on Parallel Scientific Computing in C++ and MPI
 !>              by Karniadakis and Kirby. CR algorithm removes odd rows recursively,
 !>              so MPI processes begin to drop out after single row is left per MPI process,
@@ -7,16 +8,18 @@
 !>              the level where single row is left per MPI process. In this implementation,
 !>              we can choose CR or PCR algorithm from the single-row level.
 !>              Odd-rows are removed successively and we obtain two reduced equations finally.
-!>              Obtained solutions from 2x2 matrix equations are back-substituted. 
+!>              Obtained solutions from 2x2 matrix equations are used to obtain other unknowns.
+!>              Hybrid Thomas-PCR algorithm is from the work of Laszlo, Gilles and Appleyard, 
+!>              Manycore Algorithms for Batch Scalar and Block Tridiagonal Solvers, ACM TOMS, 
+!>              42, 31 (2016).
 !>
 !> @author      Ji-Hoon Kang (jhkang@kisti.re.kr), Korea Institute of Science and Technology Information
-!> @date        15 January 2019
+!> @date        20 January 2019
 !> @version     0.1
 !> @par         Copyright
 !>              Copyright (c) 2018 by Ji-Hoon Kang. All rights reserved.
 !> @par         License     
 !>              This project is release under the terms of the MIT License (see LICENSE in )
-!> @todo        Parallel Thomas instead of CR for the levels of multiple rows per MPI process.
 !>
 
 module tdma_parallel
@@ -58,14 +61,12 @@ module tdma_parallel
     !>
     !> @brief   CR solver: cr_forward_multiple + cr_forward_single + cr_backward_single + cr_backward_multiple
     !> @param   a_mpi (input) Lower off-diagonal coeff., which is assigned to local private pointer a
-    !> @param   b_mpi (input) Diagonal coeff., which is assigned to local private pointer a
-    !> @param   c_mpi (input) Upper off-diagonal coeff.,, which is assigned to local private pointer a
-    !> @param   r_mpi (input) RHS vector, which is assigned to local private pointer a
-    !> @param   x_mpi (output) Solution vector, which is assigned to local private pointer a
+    !> @param   b_mpi (input) Diagonal coeff., which is assigned to local private pointer b
+    !> @param   c_mpi (input) Upper off-diagonal coeff.,, which is assigned to local private pointer c
+    !> @param   r_mpi (input) RHS vector, which is assigned to local private pointer r
+    !> @param   x_mpi (output) Solution vector, which is assigned to local private pointer x
     !>
     subroutine cr_solver(a_mpi, b_mpi, c_mpi, r_mpi, x_mpi)
-
-        use mpi
 
         implicit none
 
@@ -93,14 +94,12 @@ module tdma_parallel
     !>
     !> @brief   CR-PCR solver: cr_forward_multiple + pcr_forward_single + cr_backward_multiple
     !> @param   a_mpi (input) Lower off-diagonal coeff., which is assigned to local private pointer a
-    !> @param   b_mpi (input) Diagonal coeff., which is assigned to local private pointer a
-    !> @param   c_mpi (input) Upper off-diagonal coeff.,, which is assigned to local private pointer a
-    !> @param   r_mpi (input) RHS vector, which is assigned to local private pointer a
-    !> @param   x_mpi (output) Solution vector, which is assigned to local private pointer a
+    !> @param   b_mpi (input) Diagonal coeff., which is assigned to local private pointer b
+    !> @param   c_mpi (input) Upper off-diagonal coeff.,, which is assigned to local private pointer c
+    !> @param   r_mpi (input) RHS vector, which is assigned to local private pointer r
+    !> @param   x_mpi (output) Solution vector, which is assigned to local private pointer x
     !>
     subroutine cr_pcr_solver(a_mpi, b_mpi, c_mpi, r_mpi, x_mpi)
-
-        use mpi
 
         implicit none
 
@@ -123,6 +122,37 @@ module tdma_parallel
         nullify(a, b, c, r, x)
 
     end subroutine cr_pcr_solver
+
+    !>
+    !> @brief   Thomas-PCR solver: pThomas_forward_multiple + pcr_forward_double + pThomas_backward_multiple
+    !> @param   a_mpi (input) Lower off-diagonal coeff., which is assigned to local private pointer a
+    !> @param   b_mpi (input) Diagonal coeff., which is assigned to local private pointer b
+    !> @param   c_mpi (input) Upper off-diagonal coeff.,, which is assigned to local private pointer c
+    !> @param   r_mpi (input) RHS vector, which is assigned to local private pointer r
+    !> @param   x_mpi (output) Solution vector, which is assigned to local private pointer x
+    !>
+    subroutine Thomas_pcr_solver(a_mpi, b_mpi, c_mpi, r_mpi, x_mpi)
+
+        implicit none
+
+        real(8), intent(inout), target :: a_mpi(0:n_mpi+1)
+        real(8), intent(inout), target :: b_mpi(0:n_mpi+1)
+        real(8), intent(inout), target :: c_mpi(0:n_mpi+1)
+        real(8), intent(inout), target :: r_mpi(0:n_mpi+1)
+        real(8), intent(inout), target :: x_mpi(0:n_mpi+1)
+
+        a => a_mpi
+        b => b_mpi
+        c => c_mpi
+        r => r_mpi
+        x => x_mpi
+
+        call pThomas_forward_multiple_row()
+        call pcr_double_row_substitution()
+
+        nullify(a, b, c, r, x)
+
+    end subroutine Thomas_pcr_solver
 
     !> 
     !> @brief   Forward elimination of CR until a single row per MPI process remains.
@@ -613,6 +643,124 @@ module tdma_parallel
 
     end subroutine pcr_forward_single_row
 
+
+    !> 
+    !> @brief   First phase of hybrid Thomas and PCR algorithm
+    !> @detail  Forward and backward elimination to remain two equations of first and 
+    !>          last rows for each MPI processes 
+    subroutine pThomas_forward_multiple_row
+
+        implicit none
+
+        integer(4)  :: i
+        real(8)     :: alpha, beta
+   
+        do i = 3, n_mpi
+            alpha = - a(i) / b(i-1)
+            a(i) = alpha * a(i-1)
+            b(i) = b(i) + alpha * c(i-1)
+            r(i) = r(i) + alpha * r(i-1)
+        enddo
+
+        do i = n_mpi-2, 1, -1
+            beta = - c(i) / b(i+1)
+            c(i) = beta * c(i+1)
+            r(i) = r(i) + beta * r(i+1)
+            if(i==1) then
+                b(1) = b(1) + beta * a(2)
+            else
+                a(i) = a(i) + beta * a(i+1)
+            endif
+        enddo
+
+    end subroutine pThomas_forward_multiple_row
+   
+    !> 
+    !> @brief   PCR solver for two equations per each MPI process
+    !> @detail  Forward CR to remain a single equation per each MPI process.
+    !>          PCR solver for single row is, then, executed.
+    !>          Substitution is also performed to obtain every solution.
+    !>
+    subroutine pcr_double_row_substitution
+
+        use mpi
+
+        implicit none
+
+        integer(4)  :: i, ip, in
+        real(8)     :: alpha, gamma
+        real(8)     :: sbuf(4), rbuf(4)
+
+        integer(4)  :: status(MPI_STATUS_SIZE)
+        integer(4)  :: request(2)
+        integer(4)  :: ierr
+
+        !< Cyclic reduction until single row remains per MPI process.
+        !< First row of next rank is sent to current rank at the row of n_mpi+1 for reduction.
+        if(myrank<nprocs-1) then
+            call mpi_irecv(rbuf, 4, MPI_REAL8, myrank+1, 0, MPI_COMM_WORLD, request(1), ierr)
+        endif
+        if(myrank>0) then
+            sbuf(1) = a(1);
+            sbuf(2) = b(1);
+            sbuf(3) = c(1);
+            sbuf(4) = r(1);
+            call mpi_isend(sbuf, 4, MPI_REAL8, myrank-1, 0, MPI_COMM_WORLD, request(2), ierr)
+        endif
+        if(myrank<nprocs-1) then
+            call mpi_wait(request(1), status, ierr)
+            a(n_mpi+1) = rbuf(1)
+            b(n_mpi+1) = rbuf(2)
+            c(n_mpi+1) = rbuf(3)
+            r(n_mpi+1) = rbuf(4)
+        endif
+   
+        !< Every first row are reduced to the last row (n_mpi) in each MPI rank.
+        i = n_mpi
+        ip = 1
+        in = i + 1
+        alpha = -a(i) / b(ip)
+        gamma = -c(i) / b(in)
+
+        b(i) = b(i) + (alpha * c(ip) + gamma * a(in))
+        a(i) = alpha * a(ip)
+        c(i) = gamma * c(in)
+        r(i) = r(i) + (alpha * r(ip) + gamma * r(in))
+        
+        if(myrank>0) then
+            call mpi_wait(request(2), status, ierr)
+        endif
+   
+        !< Solution of last row in each MPI rank is obtained in pcr_forward_single_row().
+        call pcr_forward_single_row
+
+        !< Solution of first row in each MPI rank.
+        if(myrank>0) then
+            call mpi_irecv(x(0),   1, MPI_REAL8, myrank-1, 100, MPI_COMM_WORLD, request(1), ierr)
+        endif
+        if(myrank<nprocs-1) then
+            call mpi_isend(x(n_mpi), 1, MPI_REAL8, myrank+1, 100, MPI_COMM_WORLD, request(2), ierr)
+        endif
+        if(myrank>0) then
+            call mpi_wait(request(1), status, ierr)
+        endif
+        i = 1
+        ip = 0
+        in = n_mpi
+        x(1) = r(1)-c(1)*x(n_mpi)-a(1)*x(0)
+        x(1) = x(1)/b(1)
+
+        if(myrank<nprocs-1) then
+            call mpi_wait(request(2), status, ierr)
+        endif
+        !< Solution of other rows in each MPI rank.
+        do i = 2, n_mpi-1
+            x(i) = r(i)-c(i)*x(n_mpi)-a(i)*x(1)
+            x(i) = x(i)/b(i)
+        enddo
+    end subroutine pcr_double_row_substitution
+   
+
     !> 
     !> @brief   Solution check
     !> @param   *a_ver Coefficients of a with original values
@@ -621,7 +769,7 @@ module tdma_parallel
     !> @param   *r_ver RHS vector with original values
     !> @param   *x_sol Solution vector
     !>
-       subroutine verify_solution(a_ver, b_ver, c_ver, r_ver, x_sol)
+    subroutine verify_solution(a_ver, b_ver, c_ver, r_ver, x_sol)
 
         use mpi
 
@@ -668,7 +816,8 @@ module tdma_parallel
         
         do i = 1, n_mpi
             y(i) = a(i)*x(i-1)+b(i)*x(i)+c(i)*x(i+1)
-            print '("Verify solution1 : myrank = ", i3, " a=", f12.6, " b=", f12.6, " c=", f12.6, " x=", f12.6, " r[", i3,"]=", f12.6, " y[", i3,"]=", f12.6)', myrank,a(i),b(i),c(i),x(i),i+n_mpi*myrank,r(i),i+n_mpi*myrank,y(i)
+!            print '("Verify solution1 : myrank = ", i3, " a=", f12.6, " b=", f12.6, " c=", f12.6, " x=", f12.6, " r[", i3,"]=", f12.6, " y[", i3,"]=", f12.6)', myrank,a(i),b(i),c(i),x(i),i+n_mpi*myrank,r(i),i+n_mpi*myrank,y(i)
+            print '("Verify solution1 : myrank = ", i3, " x=", f15.9, " r[", i3,"]=", f15.9, " y[", i3,"]=", f15.9)', myrank,x(i),i+n_mpi*myrank,r(i),i+n_mpi*myrank,y(i)
         enddo
         deallocate(y)
 

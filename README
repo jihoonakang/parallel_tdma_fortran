@@ -1,6 +1,7 @@
-Parallel TDMA solver using cyclic reduction (CR) anc Parallel CR algorithm
+Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR),
+and Thomas+PCR hybrid algorithm
 
-                                                            15 Jan 2019
+                                                                Jan 2019
                                         by Ji-Hoon Kang (jhkang@kisti.re.kr) 
                         Korea Institute of Science and Technology Information
 
@@ -15,6 +16,10 @@ a single row.
 Odd-rows are removed successively and we obtain two reduced equations finally,
 from which the last-level solutions are obtained. The last-level solutions 
 are back-substituted for all rows.
+
+Hybrid Thomas-PCR algorithm is from the work of Laszlo, Gilles and Appleyard, 
+Manycore Algorithms for Batch Scalar and Block Tridiagonal Solvers, ACM TOMS, 
+42, 31 (2016).
 
 This solver has restrictions on input parameters in which the number of rows
 is 2^n and the number of MPI processes is 2^m, respectively, and n >= 2*m.

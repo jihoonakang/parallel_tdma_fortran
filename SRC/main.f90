@@ -1,7 +1,7 @@
 !>
 !> @brief       Parallel TDMA test subroutine
 !> @author      Ji-Hoon Kang (jhkang@kisti.re.kr), Korea Institute of Science and Technology Information
-!> @date        15 January 2019
+!> @date        20 January 2019
 !> @version     0.1
 !> @par         Copyright
 !>              Copyright (c) 2018 by Ji-Hoon Kang. All rights reserved.
@@ -15,7 +15,7 @@ program main
 
     implicit none
 
-    integer(kind=4), parameter :: n = 128
+    integer(kind=4), parameter :: n = 32
     integer(kind=4)     :: i
     integer(kind=4)     :: nprocs, myrank
     integer(kind=4)     :: n_mpi
@@ -51,7 +51,7 @@ program main
 
     do i = 1, n_mpi
         a_mpi(i) = 1.0 !+0.01*(i+myrank*n_mpi)
-        c_mpi(i) = 1.0 !+0.02*(i+myrank*n_mpi);
+        c_mpi(i) = 1.0 !+0.02*(i+myrank*n_mpi)
         b_mpi(i) = -(a_mpi(i)+c_mpi(i))-0.1 !-0.02*(i+myrank*n_mpi)*(i+myrank*n_mpi)
         r_mpi(i) = dble(i-1+myrank*n_mpi)
         a_ver(i) = a_mpi(i)
@@ -61,7 +61,8 @@ program main
     enddo
 
     call tdma_setup    (n, nprocs, myrank)
-    call cr_pcr_solver (a_mpi, b_mpi, c_mpi, r_mpi, x_mpi)
+    call Thomas_pcr_solver (a_mpi, b_mpi, c_mpi, r_mpi, x_mpi)
+!    call cr_pcr_solver (a_mpi, b_mpi, c_mpi, r_mpi, x_mpi)
     call verify_solution(a_ver, b_ver, c_ver, r_ver, x_mpi)
 
     deallocate(a_mpi)
