@@ -1,0 +1,240 @@
+\hypertarget{namespacetdma__parallel}{}\section{tdma\+\_\+parallel Module Reference}
+\label{namespacetdma__parallel}\index{tdma\_parallel@{tdma\_parallel}}
+
+
+Parallel tri-\/diagonal matrix solver using cyclic reduction (CR), parallel CR (P\+CR), and Thomas+\+P\+CR hybrid algorithm.  
+
+
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a7aa2a590feb83632170b7cb7b74fefd3}{tdma\+\_\+setup}} (n, np\+\_\+world, rank\+\_\+world)
+\begin{DoxyCompactList}\small\item\em Initialize local private variables from global input parameters. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_abfb0b9e0d8e67acbd6d8cfa390faee6a}{cr\+\_\+solver}} (a\+\_\+mpi, b\+\_\+mpi, c\+\_\+mpi, r\+\_\+mpi, x\+\_\+mpi)
+\begin{DoxyCompactList}\small\item\em CR solver\+: cr\+\_\+forward\+\_\+multiple + cr\+\_\+forward\+\_\+single + cr\+\_\+backward\+\_\+single + cr\+\_\+backward\+\_\+multiple. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a5b221ee60f9b10b484cd5439f5b485f0}{cr\+\_\+pcr\+\_\+solver}} (a\+\_\+mpi, b\+\_\+mpi, c\+\_\+mpi, r\+\_\+mpi, x\+\_\+mpi)
+\begin{DoxyCompactList}\small\item\em C\+R-\/\+P\+CR solver\+: cr\+\_\+forward\+\_\+multiple + pcr\+\_\+forward\+\_\+single + cr\+\_\+backward\+\_\+multiple. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a03041ff2dce526db1fed51ab87b84da5}{thomas\+\_\+pcr\+\_\+solver}} (a\+\_\+mpi, b\+\_\+mpi, c\+\_\+mpi, r\+\_\+mpi, x\+\_\+mpi)
+\begin{DoxyCompactList}\small\item\em Thomas-\/\+P\+CR solver\+: p\+Thomas\+\_\+forward\+\_\+multiple + pcr\+\_\+forward\+\_\+double + p\+Thomas\+\_\+backward\+\_\+multiple. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_afc500f1450d23091f136330208ca4519}{cr\+\_\+forward\+\_\+multiple\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Forward elimination of CR until a single row per M\+PI process remains. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_af9df427633cb9dc93aae24114abf95d7}{cr\+\_\+backward\+\_\+multiple\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Backward substitution of CR after single-\/row solution per M\+PI process is obtained. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a33fc3b14caafcdd849e1d4c08e766695}{cr\+\_\+forward\+\_\+single\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Forward elimination of CR between a single row per M\+PI process. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a463b29782692ccfe72b867d5a4b7f2f2}{cr\+\_\+backward\+\_\+single\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Backward substitution of CR until every M\+PI process gets solution for its single row. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_aaf75cee6f05e371d59e0d40cb5138192}{pcr\+\_\+forward\+\_\+single\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em P\+CR between a single row per M\+PI process and 2x2 matrix solver between i and i+nprocs/2 rows. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a15527e0932190d7abd8b716641de36e8}{pthomas\+\_\+forward\+\_\+multiple\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em First phase of hybrid Thomas and P\+CR algorithm. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a438b27a63218775dcccdc41dcb7a6a36}{pcr\+\_\+double\+\_\+row\+\_\+substitution}}
+\begin{DoxyCompactList}\small\item\em P\+CR solver for two equations per each M\+PI process. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a9c627d634cb17863dd5ab60b3f4f8d11}{verify\+\_\+solution}} (a\+\_\+ver, b\+\_\+ver, c\+\_\+ver, r\+\_\+ver, x\+\_\+sol)
+\begin{DoxyCompactList}\small\item\em Solution check. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Parallel tri-\/diagonal matrix solver using cyclic reduction (CR), parallel CR (P\+CR), and Thomas+\+P\+CR hybrid algorithm. 
+
+The CR algorithm is described on Parallel Scientific Computing in C++ and M\+PI by Karniadakis and Kirby. CR algorithm removes odd rows recursively, so M\+PI processes begin to drop out after single row is left per M\+PI process, while P\+CR can use full parallelism. Therefore, P\+CR is a good solution from the level where single row is left per M\+PI process. In this implementation, we can choose CR or P\+CR algorithm from the single-\/row level. Odd-\/rows are removed successively and we obtain two reduced equations finally. Obtained solutions from 2x2 matrix equations are used to obtain other unknowns. Hybrid Thomas-\/\+P\+CR algorithm is from the work of Laszlo, Gilles and Appleyard, Manycore Algorithms for Batch Scalar and Block Tridiagonal Solvers, A\+CM T\+O\+MS, 42, 31 (2016).
+
+\begin{DoxyAuthor}{Author}
+Ji-\/\+Hoon Kang (\href{mailto:jhkang@kisti.re.kr}{\texttt{ jhkang@kisti.\+re.\+kr}}), Korea Institute of Science and Technology Information 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+20 January 2019 
+\end{DoxyDate}
+\begin{DoxyVersion}{Version}
+0.\+1 
+\end{DoxyVersion}
+\begin{DoxyParagraph}{Copyright}
+Copyright (c) 2018 by Ji-\/\+Hoon Kang. All rights reserved. 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{License }
+
+\end{DoxyParagraph}
+This project is release under the terms of the M\+IT License (see L\+I\+C\+E\+N\+SE in ) 
+
+\subsection{Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{namespacetdma__parallel_af9df427633cb9dc93aae24114abf95d7}\label{namespacetdma__parallel_af9df427633cb9dc93aae24114abf95d7}} 
+\index{tdma\_parallel@{tdma\_parallel}!cr\_backward\_multiple\_row@{cr\_backward\_multiple\_row}}
+\index{cr\_backward\_multiple\_row@{cr\_backward\_multiple\_row}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{cr\_backward\_multiple\_row()}{cr\_backward\_multiple\_row()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::cr\+\_\+backward\+\_\+multiple\+\_\+row (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Backward substitution of CR after single-\/row solution per M\+PI process is obtained. 
+
+\mbox{\Hypertarget{namespacetdma__parallel_a463b29782692ccfe72b867d5a4b7f2f2}\label{namespacetdma__parallel_a463b29782692ccfe72b867d5a4b7f2f2}} 
+\index{tdma\_parallel@{tdma\_parallel}!cr\_backward\_single\_row@{cr\_backward\_single\_row}}
+\index{cr\_backward\_single\_row@{cr\_backward\_single\_row}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{cr\_backward\_single\_row()}{cr\_backward\_single\_row()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::cr\+\_\+backward\+\_\+single\+\_\+row (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Backward substitution of CR until every M\+PI process gets solution for its single row. 
+
+\mbox{\Hypertarget{namespacetdma__parallel_afc500f1450d23091f136330208ca4519}\label{namespacetdma__parallel_afc500f1450d23091f136330208ca4519}} 
+\index{tdma\_parallel@{tdma\_parallel}!cr\_forward\_multiple\_row@{cr\_forward\_multiple\_row}}
+\index{cr\_forward\_multiple\_row@{cr\_forward\_multiple\_row}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{cr\_forward\_multiple\_row()}{cr\_forward\_multiple\_row()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::cr\+\_\+forward\+\_\+multiple\+\_\+row (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Forward elimination of CR until a single row per M\+PI process remains. 
+
+After a single row per M\+PI process remains, P\+CR or CR between a single row is performed. \mbox{\Hypertarget{namespacetdma__parallel_a33fc3b14caafcdd849e1d4c08e766695}\label{namespacetdma__parallel_a33fc3b14caafcdd849e1d4c08e766695}} 
+\index{tdma\_parallel@{tdma\_parallel}!cr\_forward\_single\_row@{cr\_forward\_single\_row}}
+\index{cr\_forward\_single\_row@{cr\_forward\_single\_row}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{cr\_forward\_single\_row()}{cr\_forward\_single\_row()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::cr\+\_\+forward\+\_\+single\+\_\+row (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Forward elimination of CR between a single row per M\+PI process. 
+
+\mbox{\Hypertarget{namespacetdma__parallel_a5b221ee60f9b10b484cd5439f5b485f0}\label{namespacetdma__parallel_a5b221ee60f9b10b484cd5439f5b485f0}} 
+\index{tdma\_parallel@{tdma\_parallel}!cr\_pcr\_solver@{cr\_pcr\_solver}}
+\index{cr\_pcr\_solver@{cr\_pcr\_solver}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{cr\_pcr\_solver()}{cr\_pcr\_solver()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::cr\+\_\+pcr\+\_\+solver (\begin{DoxyParamCaption}\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{a\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{b\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{c\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{r\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{x\+\_\+mpi }\end{DoxyParamCaption})}
+
+
+
+C\+R-\/\+P\+CR solver\+: cr\+\_\+forward\+\_\+multiple + pcr\+\_\+forward\+\_\+single + cr\+\_\+backward\+\_\+multiple. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em a\+\_\+mpi} & (input) Lower off-\/diagonal coeff., which is assigned to local private pointer a \\
+\hline
+{\em b\+\_\+mpi} & (input) Diagonal coeff., which is assigned to local private pointer b \\
+\hline
+{\em c\+\_\+mpi} & (input) Upper off-\/diagonal coeff.,, which is assigned to local private pointer c \\
+\hline
+{\em r\+\_\+mpi} & (input) R\+HS vector, which is assigned to local private pointer r \\
+\hline
+{\em x\+\_\+mpi} & (output) Solution vector, which is assigned to local private pointer x \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacetdma__parallel_abfb0b9e0d8e67acbd6d8cfa390faee6a}\label{namespacetdma__parallel_abfb0b9e0d8e67acbd6d8cfa390faee6a}} 
+\index{tdma\_parallel@{tdma\_parallel}!cr\_solver@{cr\_solver}}
+\index{cr\_solver@{cr\_solver}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{cr\_solver()}{cr\_solver()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::cr\+\_\+solver (\begin{DoxyParamCaption}\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{a\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{b\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{c\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{r\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{x\+\_\+mpi }\end{DoxyParamCaption})}
+
+
+
+CR solver\+: cr\+\_\+forward\+\_\+multiple + cr\+\_\+forward\+\_\+single + cr\+\_\+backward\+\_\+single + cr\+\_\+backward\+\_\+multiple. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em a\+\_\+mpi} & (input) Lower off-\/diagonal coeff., which is assigned to local private pointer a \\
+\hline
+{\em b\+\_\+mpi} & (input) Diagonal coeff., which is assigned to local private pointer b \\
+\hline
+{\em c\+\_\+mpi} & (input) Upper off-\/diagonal coeff.,, which is assigned to local private pointer c \\
+\hline
+{\em r\+\_\+mpi} & (input) R\+HS vector, which is assigned to local private pointer r \\
+\hline
+{\em x\+\_\+mpi} & (output) Solution vector, which is assigned to local private pointer x \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacetdma__parallel_a438b27a63218775dcccdc41dcb7a6a36}\label{namespacetdma__parallel_a438b27a63218775dcccdc41dcb7a6a36}} 
+\index{tdma\_parallel@{tdma\_parallel}!pcr\_double\_row\_substitution@{pcr\_double\_row\_substitution}}
+\index{pcr\_double\_row\_substitution@{pcr\_double\_row\_substitution}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{pcr\_double\_row\_substitution()}{pcr\_double\_row\_substitution()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::pcr\+\_\+double\+\_\+row\+\_\+substitution (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+P\+CR solver for two equations per each M\+PI process. 
+
+Forward CR to remain a single equation per each M\+PI process. P\+CR solver for single row is, then, executed. Substitution is also performed to obtain every solution. \mbox{\Hypertarget{namespacetdma__parallel_aaf75cee6f05e371d59e0d40cb5138192}\label{namespacetdma__parallel_aaf75cee6f05e371d59e0d40cb5138192}} 
+\index{tdma\_parallel@{tdma\_parallel}!pcr\_forward\_single\_row@{pcr\_forward\_single\_row}}
+\index{pcr\_forward\_single\_row@{pcr\_forward\_single\_row}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{pcr\_forward\_single\_row()}{pcr\_forward\_single\_row()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::pcr\+\_\+forward\+\_\+single\+\_\+row (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+P\+CR between a single row per M\+PI process and 2x2 matrix solver between i and i+nprocs/2 rows. 
+
+\mbox{\Hypertarget{namespacetdma__parallel_a15527e0932190d7abd8b716641de36e8}\label{namespacetdma__parallel_a15527e0932190d7abd8b716641de36e8}} 
+\index{tdma\_parallel@{tdma\_parallel}!pthomas\_forward\_multiple\_row@{pthomas\_forward\_multiple\_row}}
+\index{pthomas\_forward\_multiple\_row@{pthomas\_forward\_multiple\_row}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{pthomas\_forward\_multiple\_row()}{pthomas\_forward\_multiple\_row()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::pthomas\+\_\+forward\+\_\+multiple\+\_\+row (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+First phase of hybrid Thomas and P\+CR algorithm. 
+
+Forward and backward elimination to remain two equations of first and last rows for each M\+PI processes \mbox{\Hypertarget{namespacetdma__parallel_a7aa2a590feb83632170b7cb7b74fefd3}\label{namespacetdma__parallel_a7aa2a590feb83632170b7cb7b74fefd3}} 
+\index{tdma\_parallel@{tdma\_parallel}!tdma\_setup@{tdma\_setup}}
+\index{tdma\_setup@{tdma\_setup}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{tdma\_setup()}{tdma\_setup()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::tdma\+\_\+setup (\begin{DoxyParamCaption}\item[{integer(4), intent(in)}]{n,  }\item[{integer(4), intent(in)}]{np\+\_\+world,  }\item[{integer(4), intent(in)}]{rank\+\_\+world }\end{DoxyParamCaption})}
+
+
+
+Initialize local private variables from global input parameters. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em n} & Size of global array \\
+\hline
+{\em np\+\_\+world} & Number of M\+PI process \\
+\hline
+{\em rank\+\_\+world} & rank ID in M\+P\+I\+\_\+\+C\+O\+M\+M\+\_\+\+W\+O\+R\+LD \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacetdma__parallel_a03041ff2dce526db1fed51ab87b84da5}\label{namespacetdma__parallel_a03041ff2dce526db1fed51ab87b84da5}} 
+\index{tdma\_parallel@{tdma\_parallel}!thomas\_pcr\_solver@{thomas\_pcr\_solver}}
+\index{thomas\_pcr\_solver@{thomas\_pcr\_solver}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{thomas\_pcr\_solver()}{thomas\_pcr\_solver()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::thomas\+\_\+pcr\+\_\+solver (\begin{DoxyParamCaption}\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{a\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{b\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{c\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{r\+\_\+mpi,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{x\+\_\+mpi }\end{DoxyParamCaption})}
+
+
+
+Thomas-\/\+P\+CR solver\+: p\+Thomas\+\_\+forward\+\_\+multiple + pcr\+\_\+forward\+\_\+double + p\+Thomas\+\_\+backward\+\_\+multiple. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em a\+\_\+mpi} & (input) Lower off-\/diagonal coeff., which is assigned to local private pointer a \\
+\hline
+{\em b\+\_\+mpi} & (input) Diagonal coeff., which is assigned to local private pointer b \\
+\hline
+{\em c\+\_\+mpi} & (input) Upper off-\/diagonal coeff.,, which is assigned to local private pointer c \\
+\hline
+{\em r\+\_\+mpi} & (input) R\+HS vector, which is assigned to local private pointer r \\
+\hline
+{\em x\+\_\+mpi} & (output) Solution vector, which is assigned to local private pointer x \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{namespacetdma__parallel_a9c627d634cb17863dd5ab60b3f4f8d11}\label{namespacetdma__parallel_a9c627d634cb17863dd5ab60b3f4f8d11}} 
+\index{tdma\_parallel@{tdma\_parallel}!verify\_solution@{verify\_solution}}
+\index{verify\_solution@{verify\_solution}!tdma\_parallel@{tdma\_parallel}}
+\subsubsection{\texorpdfstring{verify\_solution()}{verify\_solution()}}
+{\footnotesize\ttfamily subroutine tdma\+\_\+parallel\+::verify\+\_\+solution (\begin{DoxyParamCaption}\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{a\+\_\+ver,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{b\+\_\+ver,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{c\+\_\+ver,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{r\+\_\+ver,  }\item[{real(8), dimension(0\+:n\+\_\+mpi+1), intent(inout), target}]{x\+\_\+sol }\end{DoxyParamCaption})}
+
+
+
+Solution check. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em $\ast$a\+\_\+ver} & Coefficients of a with original values \\
+\hline
+{\em $\ast$b\+\_\+ver} & Coefficients of b with original values \\
+\hline
+{\em $\ast$c\+\_\+ver} & Coefficients of c with original values \\
+\hline
+{\em $\ast$r\+\_\+ver} & R\+HS vector with original values \\
+\hline
+{\em $\ast$x\+\_\+sol} & Solution vector \\
+\hline
+\end{DoxyParams}

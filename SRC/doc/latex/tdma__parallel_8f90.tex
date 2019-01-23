@@ -1,0 +1,34 @@
+\hypertarget{tdma__parallel_8f90}{}\section{tdma\+\_\+parallel.\+f90 File Reference}
+\label{tdma__parallel_8f90}\index{tdma\_parallel.f90@{tdma\_parallel.f90}}
+\subsection*{Modules}
+\begin{DoxyCompactItemize}
+\item 
+module \mbox{\hyperlink{namespacetdma__parallel}{tdma\+\_\+parallel}}
+\begin{DoxyCompactList}\small\item\em Parallel tri-\/diagonal matrix solver using cyclic reduction (CR), parallel CR (P\+CR), and Thomas+\+P\+CR hybrid algorithm. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions/\+Subroutines}
+\begin{DoxyCompactItemize}
+\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a7aa2a590feb83632170b7cb7b74fefd3}{tdma\+\_\+parallel\+::tdma\+\_\+setup}} (n, np\+\_\+world, rank\+\_\+world)
+\begin{DoxyCompactList}\small\item\em Initialize local private variables from global input parameters. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_abfb0b9e0d8e67acbd6d8cfa390faee6a}{tdma\+\_\+parallel\+::cr\+\_\+solver}} (a\+\_\+mpi, b\+\_\+mpi, c\+\_\+mpi, r\+\_\+mpi, x\+\_\+mpi)
+\begin{DoxyCompactList}\small\item\em CR solver\+: cr\+\_\+forward\+\_\+multiple + cr\+\_\+forward\+\_\+single + cr\+\_\+backward\+\_\+single + cr\+\_\+backward\+\_\+multiple. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a5b221ee60f9b10b484cd5439f5b485f0}{tdma\+\_\+parallel\+::cr\+\_\+pcr\+\_\+solver}} (a\+\_\+mpi, b\+\_\+mpi, c\+\_\+mpi, r\+\_\+mpi, x\+\_\+mpi)
+\begin{DoxyCompactList}\small\item\em C\+R-\/\+P\+CR solver\+: cr\+\_\+forward\+\_\+multiple + pcr\+\_\+forward\+\_\+single + cr\+\_\+backward\+\_\+multiple. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a03041ff2dce526db1fed51ab87b84da5}{tdma\+\_\+parallel\+::thomas\+\_\+pcr\+\_\+solver}} (a\+\_\+mpi, b\+\_\+mpi, c\+\_\+mpi, r\+\_\+mpi, x\+\_\+mpi)
+\begin{DoxyCompactList}\small\item\em Thomas-\/\+P\+CR solver\+: p\+Thomas\+\_\+forward\+\_\+multiple + pcr\+\_\+forward\+\_\+double + p\+Thomas\+\_\+backward\+\_\+multiple. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_afc500f1450d23091f136330208ca4519}{tdma\+\_\+parallel\+::cr\+\_\+forward\+\_\+multiple\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Forward elimination of CR until a single row per M\+PI process remains. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_af9df427633cb9dc93aae24114abf95d7}{tdma\+\_\+parallel\+::cr\+\_\+backward\+\_\+multiple\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Backward substitution of CR after single-\/row solution per M\+PI process is obtained. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a33fc3b14caafcdd849e1d4c08e766695}{tdma\+\_\+parallel\+::cr\+\_\+forward\+\_\+single\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Forward elimination of CR between a single row per M\+PI process. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a463b29782692ccfe72b867d5a4b7f2f2}{tdma\+\_\+parallel\+::cr\+\_\+backward\+\_\+single\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em Backward substitution of CR until every M\+PI process gets solution for its single row. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_aaf75cee6f05e371d59e0d40cb5138192}{tdma\+\_\+parallel\+::pcr\+\_\+forward\+\_\+single\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em P\+CR between a single row per M\+PI process and 2x2 matrix solver between i and i+nprocs/2 rows. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a15527e0932190d7abd8b716641de36e8}{tdma\+\_\+parallel\+::pthomas\+\_\+forward\+\_\+multiple\+\_\+row}}
+\begin{DoxyCompactList}\small\item\em First phase of hybrid Thomas and P\+CR algorithm. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a438b27a63218775dcccdc41dcb7a6a36}{tdma\+\_\+parallel\+::pcr\+\_\+double\+\_\+row\+\_\+substitution}}
+\begin{DoxyCompactList}\small\item\em P\+CR solver for two equations per each M\+PI process. \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacetdma__parallel_a9c627d634cb17863dd5ab60b3f4f8d11}{tdma\+\_\+parallel\+::verify\+\_\+solution}} (a\+\_\+ver, b\+\_\+ver, c\+\_\+ver, r\+\_\+ver, x\+\_\+sol)
+\begin{DoxyCompactList}\small\item\em Solution check. \end{DoxyCompactList}\end{DoxyCompactItemize}
