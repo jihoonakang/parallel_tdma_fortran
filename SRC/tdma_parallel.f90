@@ -646,7 +646,7 @@ module tdma_parallel
 
     !> 
     !> @brief   First phase of hybrid Thomas and PCR algorithm
-    !> @detail  Forward and backward elimination to remain two equations of first and 
+    !> @details Forward and backward elimination to remain two equations of first and 
     !>          last rows for each MPI processes 
     subroutine pThomas_forward_multiple_row
 
@@ -677,7 +677,7 @@ module tdma_parallel
    
     !> 
     !> @brief   PCR solver for two equations per each MPI process
-    !> @detail  Forward CR to remain a single equation per each MPI process.
+    !> @details Forward CR to remain a single equation per each MPI process.
     !>          PCR solver for single row is, then, executed.
     !>          Substitution is also performed to obtain every solution.
     !>
