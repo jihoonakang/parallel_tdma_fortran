@@ -1,9 +1,9 @@
 # Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR), and Thomas+PCR hybrid algorithm
 
-                                                                Jan 2019
-                                        by Ji-Hoon Kang (jhkang@kisti.re.kr) 
-                        Korea Institute of Science and Technology Information
+## Author
+Ji-Hoon Kang (jhkang@kisti.re.kr), Korea Institute of Science and Technology Information
 
+## Overview
 The CR algorithm is described on Parallel Scientific Computing in C++ and MPI
 by Karniadakis and Kirby. CR algorithm removes odd rows recursively,
 so MPI processes begin to drop out after single row is left per MPI process,
