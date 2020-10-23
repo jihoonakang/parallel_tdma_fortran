@@ -1,5 +1,4 @@
-# Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR),
-and Thomas+PCR hybrid algorithm
+# Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR), and Thomas+PCR hybrid algorithm
 
                                                                 Jan 2019
                                         by Ji-Hoon Kang (jhkang@kisti.re.kr) 
