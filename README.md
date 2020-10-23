@@ -26,9 +26,9 @@ is 2^n and the number of MPI processes is 2^m, respectively, and n >= 2*m.
 ## Cite
 Please us the folowing bibtex, when you refer to this project.
 
-  @misc{kang2019ptdma,
-    title  = {Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR), and Thomas+PCR hybrid algorithm},
-    author = {Kang, Ji-Hoon},
-    url    = https://github.com/jihoonakang/parallel_tdma_fortran},
-    year   = {2019}
-}
+    @misc{kang2019ptdma,
+        title  = {Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR), and Thomas+PCR hybrid algorithm},
+        author = {Kang, Ji-Hoon},
+        url    = https://github.com/jihoonakang/parallel_tdma_fortran},
+        year   = {2019}
+  }
