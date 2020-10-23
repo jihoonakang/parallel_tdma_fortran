@@ -1,4 +1,4 @@
-#Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR),
+# Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR),
 and Thomas+PCR hybrid algorithm
 
                                                                 Jan 2019
@@ -24,7 +24,7 @@ Manycore Algorithms for Batch Scalar and Block Tridiagonal Solvers, ACM TOMS,
 This solver has restrictions on input parameters in which the number of rows
 is 2^n and the number of MPI processes is 2^m, respectively, and n >= 2*m.
 
-##Cite
+## Cite
 Please us the folowing bibtex, when you refer to this project.
   @misc{kang2019ptdma,
     title  = {Parallel tri-diagonal matrix solver using cyclic reduction (CR), parallel CR (PCR), and Thomas+PCR hybrid algorithm},
